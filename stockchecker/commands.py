@@ -14,7 +14,6 @@ from stockchecker.database import Database
 from stockchecker.models import Availability, ProductSnapshot
 from stockchecker.notifications import format_stock_notification
 
-
 TEST_NOTIFICATION = ProductSnapshot(
     url="https://www.disneystore.com/",
     retailer="Disney Store",

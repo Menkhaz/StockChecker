@@ -3,7 +3,7 @@ from unittest.mock import AsyncMock, Mock
 
 import pytest
 
-from stockchecker.commands import StockCommands, TEST_NOTIFICATION
+from stockchecker.commands import TEST_NOTIFICATION, StockCommands
 from stockchecker.models import Availability, ProductSnapshot
 from stockchecker.notifications import format_stock_notification
 

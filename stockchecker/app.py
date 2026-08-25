@@ -32,16 +32,23 @@ class StockCheckerBot(commands.Bot):
             headers={"User-Agent": self.settings.user_agent, "Accept-Language": "en-US,en;q=0.9"},
         )
         await self.add_cog(StockCommands(self, self.database, self.registry, self.http_session))
-        if self.settings.discord_guild_id:
-            guild = discord.Object(id=self.settings.discord_guild_id)
-            self.tree.copy_global_to(guild=guild)
-            await self.tree.sync(guild=guild)
-        else:
-            await self.tree.sync()
+        await self._sync_commands()
         self.poller = StockPoller(
             self, self.database, self.registry, self.http_session, self.settings.poll_seconds
         )
         self.poller_task = asyncio.create_task(self.poller.run(), name="stock-poller")
+
+    async def _sync_commands(self) -> None:
+        if self.settings.discord_guild_id:
+            guild = discord.Object(id=self.settings.discord_guild_id)
+            self.tree.copy_global_to(guild=guild)
+            await self.tree.sync(guild=guild)
+            # Guild commands appear immediately during development. Remove any
+            # previously published global copies so Discord does not show both.
+            self.tree.clear_commands(guild=None)
+            await self.tree.sync()
+        else:
+            await self.tree.sync()
 
     async def on_ready(self) -> None:
         logging.getLogger(__name__).info("Connected to Discord as %s", self.user)

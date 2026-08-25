@@ -29,8 +29,8 @@ must allow direct messages from the bot/server.
 6. Run `python main.py`.
 
 During development, set `DISCORD_GUILD_ID` to your test server ID so slash-command changes
-appear immediately. For global commands, leave it blank; Discord can take time to publish
-global command changes.
+appear immediately. In this mode, startup removes global copies to prevent duplicate command
+entries. For global commands, leave it blank; Discord can take time to publish changes.
 
 ## AMP Python App Runner
 
