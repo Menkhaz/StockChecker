@@ -95,22 +95,23 @@ class StockCommands(commands.Cog):
     @app_commands.default_permissions(administrator=True)
     @app_commands.checks.has_permissions(administrator=True)
     async def test_notification(self, interaction: discord.Interaction) -> None:
+        await interaction.response.defer(ephemeral=True, thinking=True)
         try:
             await interaction.user.send(format_stock_notification(TEST_NOTIFICATION))
         except discord.Forbidden:
-            await interaction.response.send_message(
+            await interaction.followup.send(
                 "I could not send you a DM. Allow direct messages from this server and try again.",
                 ephemeral=True,
             )
             return
         except discord.HTTPException:
-            await interaction.response.send_message(
+            await interaction.followup.send(
                 "Discord could not deliver the test DM. Please try again shortly.",
                 ephemeral=True,
             )
             return
 
-        await interaction.response.send_message(
+        await interaction.followup.send(
             "Test restock notification sent by DM. No subscription data was changed.",
             ephemeral=True,
         )

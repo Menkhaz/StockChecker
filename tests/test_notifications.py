@@ -30,13 +30,15 @@ async def test_test_notification_dms_invoking_user_without_database_access() -> 
     database = Mock()
     interaction = Mock()
     interaction.user.send = AsyncMock()
-    interaction.response.send_message = AsyncMock()
+    interaction.response.defer = AsyncMock()
+    interaction.followup.send = AsyncMock()
     cog = StockCommands(Mock(), database, Mock(), Mock())
 
     await StockCommands.test_notification.callback(cog, interaction)
 
+    interaction.response.defer.assert_awaited_once_with(ephemeral=True, thinking=True)
     interaction.user.send.assert_awaited_once_with(format_stock_notification(TEST_NOTIFICATION))
-    interaction.response.send_message.assert_awaited_once_with(
+    interaction.followup.send.assert_awaited_once_with(
         "Test restock notification sent by DM. No subscription data was changed.",
         ephemeral=True,
     )
