@@ -5,3 +5,8 @@ chromedriver.exe
 .idea/
 *.db
 *.log
+data/
+.venv/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
