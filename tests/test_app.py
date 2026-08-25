@@ -19,6 +19,11 @@ def settings(guild_id: int | None) -> Settings:
     )
 
 
+async def guilds(*guild_ids: int):
+    for guild_id in guild_ids:
+        yield Mock(id=guild_id)
+
+
 @pytest.mark.asyncio
 async def test_guild_sync_removes_stale_global_commands() -> None:
     bot = StockCheckerBot(settings(1234))
@@ -34,13 +39,19 @@ async def test_guild_sync_removes_stale_global_commands() -> None:
 
 
 @pytest.mark.asyncio
-async def test_global_sync_does_not_clear_commands() -> None:
+async def test_global_sync_clears_stale_guild_commands() -> None:
     bot = StockCheckerBot(settings(None))
     bot._BotBase__tree = Mock()
     bot.tree.sync = AsyncMock()
+    bot.fetch_guilds = Mock(return_value=guilds(1234, 5678))
 
     await bot._sync_commands()
 
-    bot.tree.sync.assert_awaited_once_with()
+    first_guild, second_guild = [item.kwargs["guild"] for item in bot.tree.clear_commands.call_args_list]
+    bot.tree.sync.assert_has_awaits(
+        [call(), call(guild=first_guild), call(guild=second_guild)]
+    )
     bot.tree.copy_global_to.assert_not_called()
-    bot.tree.clear_commands.assert_not_called()
+    assert first_guild.id == 1234
+    assert second_guild.id == 5678
+    bot.fetch_guilds.assert_called_once_with(limit=None, with_counts=False)

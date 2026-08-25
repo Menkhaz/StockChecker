@@ -13,6 +13,8 @@ from stockchecker.config import Settings
 from stockchecker.database import Database
 from stockchecker.poller import StockPoller
 
+logger = logging.getLogger(__name__)
+
 
 class StockCheckerBot(commands.Bot):
     def __init__(self, settings: Settings) -> None:
@@ -42,16 +44,29 @@ class StockCheckerBot(commands.Bot):
         if self.settings.discord_guild_id:
             guild = discord.Object(id=self.settings.discord_guild_id)
             self.tree.copy_global_to(guild=guild)
-            await self.tree.sync(guild=guild)
+            commands = await self.tree.sync(guild=guild)
             # Guild commands appear immediately during development. Remove any
             # previously published global copies so Discord does not show both.
             self.tree.clear_commands(guild=None)
             await self.tree.sync()
+            logger.info("Synced %d guild commands and cleared global commands", len(commands))
         else:
-            await self.tree.sync()
+            commands = await self.tree.sync()
+            # Global mode can follow an earlier guild-scoped development setup.
+            # Remove those guild copies or Discord will show both registrations.
+            cleared_guilds = 0
+            async for guild in self.fetch_guilds(limit=None, with_counts=False):
+                self.tree.clear_commands(guild=guild)
+                await self.tree.sync(guild=guild)
+                cleared_guilds += 1
+            logger.info(
+                "Synced %d global commands and cleared guild commands from %d guilds",
+                len(commands),
+                cleared_guilds,
+            )
 
     async def on_ready(self) -> None:
-        logging.getLogger(__name__).info("Connected to Discord as %s", self.user)
+        logger.info("Connected to Discord as %s", self.user)
 
     async def close(self) -> None:
         if self.poller:

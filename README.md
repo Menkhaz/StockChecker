@@ -30,7 +30,8 @@ must allow direct messages from the bot/server.
 
 During development, set `DISCORD_GUILD_ID` to your test server ID so slash-command changes
 appear immediately. In this mode, startup removes global copies to prevent duplicate command
-entries. For global commands, leave it blank; Discord can take time to publish changes.
+entries. For global commands, leave it blank; startup removes stale server copies and Discord
+can take time to publish changes.
 
 ## AMP Python App Runner
 
