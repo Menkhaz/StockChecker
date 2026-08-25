@@ -31,6 +31,38 @@ def test_extracts_product_json():
     assert DisneyStoreChecker._availability(extracted["offers"]["availability"], "") is Availability.IN_STOCK
 
 
+def test_extracts_product_microdata_when_json_ld_has_no_product():
+    document = html.fromstring(
+        """
+        <html>
+          <script type="application/ld+json">
+            {"@type": "BreadcrumbList"}
+          </script>
+          <main itemscope itemtype="http://schema.org/Product">
+            <h1 itemprop="name">Mia Thermopolis Ear Headband</h1>
+            <div itemprop="offers" itemscope itemtype="http://schema.org/Offer">
+              <meta itemprop="priceCurrency" content="USD">
+              <div itemprop="price">36.99</div>
+              <link itemprop="availability" href="https://schema.org/OutOfStock">
+            </div>
+          </main>
+        </html>
+        """
+    )
+
+    extracted = DisneyStoreChecker._find_product_json(document)
+
+    assert extracted == {
+        "@type": "Product",
+        "name": "Mia Thermopolis Ear Headband",
+        "offers": {
+            "price": "36.99",
+            "priceCurrency": "USD",
+            "availability": "https://schema.org/OutOfStock",
+        },
+    }
+
+
 def test_low_stock_text_overrides_in_stock():
     result = DisneyStoreChecker._availability("https://schema.org/InStock", "LOW STOCK")
     assert result is Availability.LOW_STOCK

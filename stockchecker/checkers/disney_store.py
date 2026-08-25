@@ -95,7 +95,38 @@ class DisneyStoreChecker(StockChecker):
                 types = node_type if isinstance(node_type, list) else [node_type]
                 if "Product" in types:
                     return node
+        return cls._find_product_microdata(document)
+
+    @classmethod
+    def _find_product_microdata(cls, document: Any) -> dict[str, Any] | None:
+        products = document.xpath(
+            '//*[@itemscope and '
+            '(substring-after(@itemtype, "schema.org/") = "Product")]'
+        )
+        for product in products:
+            name = cls._microdata_value(product, "name")
+            offer_nodes = product.xpath('.//*[@itemprop="offers" and @itemscope]')
+            if not name or not offer_nodes:
+                continue
+
+            offer = {
+                key: cls._microdata_value(offer_nodes[0], key)
+                for key in ("price", "lowPrice", "priceCurrency", "availability")
+            }
+            return {
+                "@type": "Product",
+                "name": name,
+                "offers": {key: value for key, value in offer.items() if value},
+            }
         return None
+
+    @staticmethod
+    def _microdata_value(scope: Any, itemprop: str) -> str:
+        nodes = scope.xpath(f'.//*[@itemprop="{itemprop}"][1]')
+        if not nodes:
+            return ""
+        node = nodes[0]
+        return str(node.get("content") or node.get("href") or node.text_content()).strip()
 
     @staticmethod
     def _first_offer(value: Any) -> dict[str, Any] | None:

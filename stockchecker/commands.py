@@ -21,8 +21,11 @@ class StockCommands(commands.Cog):
         self.registry = registry
         self.session = session
 
-    @app_commands.command(name="subscribe", description="Monitor a Disney Store product")
-    @app_commands.describe(url="Disney Store product URL", max_price="Optional maximum price in USD")
+    @app_commands.command(name="subscribe", description="Monitor a product for stock and price changes")
+    @app_commands.describe(
+        url="Product page URL from a supported retailer",
+        max_price="Optional maximum price in USD",
+    )
     async def subscribe(self, interaction: discord.Interaction, url: str,
                         max_price: str | None = None) -> None:
         await interaction.response.defer(ephemeral=True, thinking=True)
@@ -41,8 +44,8 @@ class StockCommands(commands.Cog):
         except (UnsupportedWebsite, ProductCheckError, ValueError) as exc:
             await interaction.followup.send(str(exc), ephemeral=True)
 
-    @app_commands.command(name="unsubscribe", description="Stop monitoring a Disney Store product")
-    @app_commands.describe(url="The same Disney Store product URL used to subscribe")
+    @app_commands.command(name="unsubscribe", description="Stop monitoring a product")
+    @app_commands.describe(url="The product page URL used to subscribe")
     async def unsubscribe(self, interaction: discord.Interaction, url: str) -> None:
         try:
             canonical, _ = DisneyStoreChecker.canonicalize(url.strip())

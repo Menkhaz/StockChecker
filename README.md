@@ -9,8 +9,8 @@ historical reference and are not imported by `main.py`.
 
 ## Discord commands
 
-- `/subscribe url:<Disney Store URL> max_price:<optional USD price>`
-- `/unsubscribe url:<Disney Store URL>`
+- `/subscribe url:<supported product URL> max_price:<optional USD price>`
+- `/unsubscribe url:<product URL>`
 - `/subscriptions`
 - `/status`
 
