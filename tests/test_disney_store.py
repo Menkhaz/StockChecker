@@ -15,6 +15,18 @@ def test_canonicalizes_disney_product_url():
     assert product_id == "445031017687"
 
 
+def test_canonicalizes_sized_disney_product_url():
+    url = (
+        "https://www.disneystore.com/"
+        "winnie-the-pooh-and-pals-varsity-jacket-for-adults-5202047470730M.html"
+    )
+
+    canonical, product_id = DisneyStoreChecker.canonicalize(url)
+
+    assert canonical == url
+    assert product_id == "5202047470730M"
+
+
 def test_extracts_product_json():
     product = {
         "@context": "https://schema.org",

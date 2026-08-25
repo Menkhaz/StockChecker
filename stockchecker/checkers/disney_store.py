@@ -13,7 +13,9 @@ from lxml import html
 from stockchecker.checkers.base import ProductCheckError, StockChecker
 from stockchecker.models import Availability, ProductSnapshot
 
-_PRODUCT_ID = re.compile(r"-(\d{12})\.html$")
+# Disney uses a 12-digit ID for ordinary product pages and a 13-digit master
+# style ID followed by "M" for products with selectable variants such as size.
+_PRODUCT_ID = re.compile(r"-(\d{12}|\d{13}M)\.html$", re.IGNORECASE)
 
 
 class DisneyStoreChecker(StockChecker):
