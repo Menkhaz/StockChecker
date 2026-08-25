@@ -13,6 +13,8 @@ historical reference and are not imported by `main.py`.
 - `/unsubscribe url:<product URL>`
 - `/subscriptions`
 - `/status`
+- `/test-notification` (server administrators only; sends a sample restock DM without
+  changing subscriptions or observations)
 
 Command responses are private. Stock-change notifications are delivered by DM, so users
 must allow direct messages from the bot/server.

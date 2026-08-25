@@ -11,6 +11,19 @@ from stockchecker.checkers.base import ProductCheckError, UnsupportedWebsite
 from stockchecker.checkers.disney_store import DisneyStoreChecker
 from stockchecker.checkers.registry import CheckerRegistry
 from stockchecker.database import Database
+from stockchecker.models import Availability, ProductSnapshot
+from stockchecker.notifications import format_stock_notification
+
+
+TEST_NOTIFICATION = ProductSnapshot(
+    url="https://www.disneystore.com/",
+    retailer="Disney Store",
+    product_id="notification-test",
+    name="StockChecker Test Product",
+    availability=Availability.IN_STOCK,
+    price=Decimal("39.99"),
+    currency="USD",
+)
 
 
 class StockCommands(commands.Cog):
@@ -72,6 +85,34 @@ class StockCommands(commands.Cog):
         product_count = len(await self.database.products())
         await interaction.response.send_message(
             f"StockChecker is online and monitoring {product_count} product(s).", ephemeral=True
+        )
+
+    @app_commands.command(
+        name="test-notification",
+        description="Send yourself a sample restock notification",
+    )
+    @app_commands.guild_only()
+    @app_commands.default_permissions(administrator=True)
+    @app_commands.checks.has_permissions(administrator=True)
+    async def test_notification(self, interaction: discord.Interaction) -> None:
+        try:
+            await interaction.user.send(format_stock_notification(TEST_NOTIFICATION))
+        except discord.Forbidden:
+            await interaction.response.send_message(
+                "I could not send you a DM. Allow direct messages from this server and try again.",
+                ephemeral=True,
+            )
+            return
+        except discord.HTTPException:
+            await interaction.response.send_message(
+                "Discord could not deliver the test DM. Please try again shortly.",
+                ephemeral=True,
+            )
+            return
+
+        await interaction.response.send_message(
+            "Test restock notification sent by DM. No subscription data was changed.",
+            ephemeral=True,
         )
 
     @staticmethod

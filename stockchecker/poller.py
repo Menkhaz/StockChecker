@@ -12,6 +12,7 @@ from stockchecker.checkers.base import ProductCheckError, UnsupportedWebsite
 from stockchecker.checkers.registry import CheckerRegistry
 from stockchecker.database import Database
 from stockchecker.models import ProductSnapshot, Subscription
+from stockchecker.notifications import format_stock_notification
 
 log = logging.getLogger(__name__)
 
@@ -63,14 +64,9 @@ class StockPoller:
         for subscription in await self.database.subscribers(snapshot.url):
             if not self._matches(subscription, snapshot):
                 continue
-            price = f"{snapshot.currency} {snapshot.price:.2f}" if snapshot.price is not None else "unknown price"
-            message = (
-                f"**{snapshot.name}** is **{snapshot.availability.label}** at {price}.\n"
-                f"{snapshot.url}"
-            )
             try:
                 user = self.bot.get_user(subscription.user_id) or await self.bot.fetch_user(subscription.user_id)
-                await user.send(message)
+                await user.send(format_stock_notification(snapshot))
             except discord.Forbidden:
                 log.warning("Cannot DM Discord user %s", subscription.user_id)
             except discord.HTTPException:
